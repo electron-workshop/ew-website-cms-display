@@ -1,0 +1,73 @@
+const FALLBACK = [
+  {
+    title: "Mautic — Email & Journeys",
+    slug: "mautic",
+    logo: "/assets/images/logos/mautic.svg",
+    text: "Run newsletters and segmented campaigns with an open‑source, GDPR‑friendly stack. Your group gets its own login and can manage subscribers, templates, and automations—no SaaS lock‑in."
+  },
+  {
+    title: "Nextcloud — Files & Collaboration",
+    slug: "nextcloud",
+    logo: "/assets/images/logos/nextcloud.svg",
+    text: "Secure cloud storage, document sharing, calendars, and team spaces. Collaborate on docs and keep track of assets in a privacy‑respecting home for your group."
+  },
+  {
+    title: "Matomo — Privacy‑First Analytics",
+    slug: "matomo",
+    logo: "/assets/images/logos/matomo.svg",
+    text: "Understand your website traffic without handing data to third parties. Configured for consent‑aware, responsible insights across your pages."
+  },
+  {
+    title: "Shared Hosting & Maintenance",
+    slug: "hosting",
+    logo: "",
+    text: "Skip the overhead. We host, patch, and monitor the stack so small groups don’t have to. You focus on your mission—we handle the boring parts."
+  },
+  {
+    title: "Onboarding & Support",
+    slug: "onboarding",
+    logo: "",
+    text: "We help you migrate lists, import files, and get your first campaigns and spaces set up. Friendly support when you need it."
+  },
+  {
+    title: "Community Network Benefits",
+    slug: "community-network",
+    logo: "",
+    text: "Be part of a federation of like‑minded groups—shared knowledge, co‑learning, and optional cross‑promotion opportunities."
+  },
+  {
+    title: "Grant Assist",
+    slug: "grant-assist",
+    logo: "",
+    text: "We help you and your collaborators get clarity together on a grant opportunity — using AI tools to strategise and draft, finding the right collaborators within and beyond the network, and identifying auspice or match funding options for a stronger application."
+  }
+];
+
+module.exports = async function () {
+  const base = process.env.STRAPI_URL;
+  if (!base) return FALLBACK;
+
+  const token = process.env.STRAPI_API_TOKEN;
+
+  try {
+    const res = await fetch(`${base}/api/offerings?populate=logo`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const { data } = await res.json();
+
+    return data.map(({ attributes: a }) => ({
+      title: a.title,
+      slug: a.slug,
+      text: a.text,
+      logo: a.logo?.data?.attributes?.url
+        ? `${base}${a.logo.data.attributes.url}`
+        : ""
+    }));
+  } catch (err) {
+    console.warn(`[offerings] Strapi fetch failed, using fallback: ${err.message}`);
+    return FALLBACK;
+  }
+};
