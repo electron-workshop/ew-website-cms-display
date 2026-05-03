@@ -45,28 +45,42 @@ const FALLBACK = [
 
 module.exports = async function () {
   const base = process.env.STRAPI_URL;
+  // DEBUG
+  console.log(`[offerings:debug] STRAPI_URL is ${base ? `set to "${base}"` : "NOT set — using fallback"}`);
   if (!base) return FALLBACK;
 
   const token = process.env.STRAPI_API_TOKEN;
+  // DEBUG
+  console.log(`[offerings:debug] STRAPI_API_TOKEN is ${token ? "set" : "NOT set"}`);
+
+  const url = `${base}/api/offerings?populate=logo`;
+  // DEBUG
+  console.log(`[offerings:debug] Fetching: ${url}`);
 
   try {
-    const res = await fetch(`${base}/api/offerings?populate=logo`, {
+    const res = await fetch(url, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
+
+    // DEBUG
+    console.log(`[offerings:debug] Response status: ${res.status} ${res.statusText}`);
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const { data } = await res.json();
 
-    return data.map(({ attributes: a }) => ({
-      title: a.title,
-      slug: a.slug,
-      text: a.text,
-      logo: a.logo?.data?.attributes?.url
-        ? `${base}${a.logo.data.attributes.url}`
-        : ""
+    // DEBUG
+    console.log(`[offerings:debug] Received ${data.length} item(s) from Strapi`);
+
+    return data.map((item) => ({
+      title: item.title,
+      slug: item.slug,
+      text: item.text,
+      logo: item.logo?.url ? `${base}${item.logo.url}` : ""
     }));
   } catch (err) {
+    // DEBUG
+    console.warn(`[offerings:debug] Fetch error: ${err.message}`);
     console.warn(`[offerings] Strapi fetch failed, using fallback: ${err.message}`);
     return FALLBACK;
   }
