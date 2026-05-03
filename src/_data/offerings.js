@@ -46,16 +46,16 @@ const FALLBACK = [
 module.exports = async function () {
   const base = process.env.STRAPI_URL;
   // DEBUG
-  console.log(`[offerings:debug] STRAPI_URL is ${base ? `set to "${base}"` : "NOT set — using fallback"}`);
+  console.error(`[offerings:debug] STRAPI_URL is ${base ? `set to "${base}"` : "NOT set — using fallback"}`);
   if (!base) return FALLBACK;
 
   const token = process.env.STRAPI_API_TOKEN;
   // DEBUG
-  console.log(`[offerings:debug] STRAPI_API_TOKEN is ${token ? "set" : "NOT set"}`);
+  console.error(`[offerings:debug] STRAPI_API_TOKEN is ${token ? "set" : "NOT set"}`);
 
   const url = `${base}/api/offerings?populate=logo`;
   // DEBUG
-  console.log(`[offerings:debug] Fetching: ${url}`);
+  console.error(`[offerings:debug] Fetching: ${url}`);
 
   try {
     const res = await fetch(url, {
@@ -63,14 +63,14 @@ module.exports = async function () {
     });
 
     // DEBUG
-    console.log(`[offerings:debug] Response status: ${res.status} ${res.statusText}`);
+    console.error(`[offerings:debug] Response status: ${res.status} ${res.statusText}`);
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const { data } = await res.json();
 
     // DEBUG
-    console.log(`[offerings:debug] Received ${data.length} item(s) from Strapi`);
+    console.error(`[offerings:debug] Received ${data.length} item(s) from Strapi`);
 
     return data.map((item) => ({
       title: item.title,
